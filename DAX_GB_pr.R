@@ -34,7 +34,7 @@ pacman::p_load(tidyverse,rvest,stringr, pdftools, httr, jsonlite, naniar, xlsx)
 
 url <- "https://boersengefluester.de/download-der-dax-geschaftsberichte-von-2007-bis-2018"
 page <- read_html(url)
-
+#no
 
 tables <- page %>%
   html_table(. , header = TRUE)
