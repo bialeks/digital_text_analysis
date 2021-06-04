@@ -1,2 +1,2 @@
 # digital_text_analysis
-JG2021
+To be used for the JG2021 keyword usage analysis
