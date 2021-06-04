@@ -15,14 +15,15 @@
 #* http://rstudio-pubs-static.s3.amazonaws.com/256588_57b585da6c054349825cba46685d8464.html
 
 #path = "G:/Geteilte Ablagen/05_Prod/03_Projekte/05_DAX_GB_Daten?konomie/GB"
-path="C:\Users\zylwiuu\Documents\SVR\productivity\frequency_of_words"
+path="C:/Users/zylwiuu/Documents/SVR/productivity/frequency_of_words"
 setwd(path)
 
-library(pacman)
+library(pacman)        #R package management tool
 library("wordcloud")   # creating word clouds
 library(quanteda)      # Quantitative Analysis of Textual Data
 library(Matrix)
 library("SnowballC")  #stemming words
+library(tm)           # txt mining
 
 pacman::p_load(tidyverse,rvest,stringr, pdftools, httr, jsonlite, naniar, xlsx) 
 
