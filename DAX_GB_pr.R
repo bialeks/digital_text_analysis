@@ -27,7 +27,7 @@ library("SnowballC")  #stemming words
 pacman::p_load(tidyverse,rvest,stringr, pdftools, httr, jsonlite, naniar, xlsx) 
 
 
-
+#
 
 ##1. getting all GB in PDF format
 # https://towardsdatascience.com/scraping-downloading-and-storing-pdfs-in-r-367a0a6d9199
