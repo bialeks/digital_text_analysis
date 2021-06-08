@@ -25,17 +25,20 @@ library(Matrix)
 library("SnowballC")  #stemming words
 library(tm)           # txt mining
 
-pacman::p_load(tidyverse,rvest,stringr, pdftools, httr, jsonlite, naniar, xlsx) 
+pacman::p_load(tidyverse,rvest,stringr, pdftools, httr, jsonlite, naniar, xlsx, tm, SnowballC, quanteda, wordcloud) 
 
 
 #
+
+#page <- GET(url, add_headers('user-agent' = 'Gov employment data scraper ([[your email]])'))
+#no
 
 ##1. getting all GB in PDF format
 # https://towardsdatascience.com/scraping-downloading-and-storing-pdfs-in-r-367a0a6d9199
 
 url <- "https://boersengefluester.de/download-der-dax-geschaftsberichte-von-2007-bis-2018"
 page <- read_html(url)
-#no
+
 
 tables <- page %>%
   html_table(. , header = TRUE)
@@ -61,6 +64,10 @@ for(row in 1:nrow(tables)){
   }
 }
 
+
+##save the table
+write.xlsx(tables, paste(path, "/", "tables.xlsx", sep = ""))
+
 # ###now download files
 # #  done that already
 # 
@@ -84,13 +91,16 @@ for(row in 1:nrow(tables)){
 ###
 ### Creat TXT Files
 ###
-xxx from here on not fully programmed but code should work and just needs to be customized 
+#xxx from here on not fully programmed but code should work and just needs to be customized 
+
+
 #*** converting the pdfs to txt file.show(
 # https://slcladal.github.io/convertpdf2txt.html
 
 ## write a function that converts pdfs to txt
 convertpdf2txtfolder <- function(dirpath){
-  files <- list.files(dirpath, full.names = T)
+  files <- list.files(dirpath, full.names = T) %>% 
+    str_subset("\\.pdf")
   x <- sapply(files, function(x){
     x <- pdftools::pdf_text(x) %>%
       paste(sep = " ") %>%
@@ -119,53 +129,123 @@ convertpdf2txtfile <- function(file){
 }
 
 
-#try to convert to txt for just one pdf file, GB 2019 by Adidas
-txts <- convertpdf2txtfile(paste0(path, "/Adidas/A1EWWW_2019.pdf", sep = ""))
-# it throws an Error: "PDF error: Invalid Font Weight" <-- but we can ignore this, still works
-# inspect the structure of the txts element
-str(txts)
+#### specify which company to process (tables[r,c] where r indexes the company name)
+for (id in 10:nrow(tables)){
+  currentcompany = as.character(tables[id,1])
+  
+  
+  # #try to convert to txt for just one pdf file, GB 2019 by Adidas
+  # txts <- convertpdf2txtfile(paste0(path, "/Adidas/A1EWWW_2019.pdf", sep = ""))
+  # # it throws an Error: "PDF error: Invalid Font Weight" <-- but we can ignore this, still works
+  # # inspect the structure of the txts element
+  # str(txts)
+  
+  
+  # We can now apply the function to the folder in which we have stored the PDFs. The output is a vector with the texts of the PDFs.
+  #e.g. for adidas
+  txts <- convertpdf2txtfolder(paste0(path, "/", currentcompany, sep = ""))
+  # add years as names to txt files
+  t = list.files(paste0(path, "/", currentcompany, sep = ""), full.names = T) %>% str_subset("\\.pdf")
+  names(txts) <- substr(t, nchar(t)-7, nchar(t)-4)
+  # inspect the structure of the txts element
+  str(txts)
+  
+  
+  # save result to disc
+  dir.create(paste(path, "/", currentcompany, "/txt/", sep = ""))
+  lapply(seq_along(txts), function(i){
+    writeLines(text = unlist(txts[i]),
+               con = paste(path, "/", currentcompany, "/txt/",  names(txts)[i],".txt", sep = ""))
+  }
+  )
+  
+  
+  
+  ####now process the txt files
+  ##process the texts
+  pacman::p_load(tm, qdap) # tm package used to remove punctuation, get word stems etc
+  
+  #clean the text (some basic stuff I just copied <-- check again; important is the lower case thing)
+  txts_clean <- map(.x = txts, .f = function(.x){
+    .x  %>%
+      str_to_lower() %>%
+      qdap::replace_abbreviation() %>%
+      qdap::replace_contraction() %>%
+      tm::removePunctuation() %>%
+      #tm::removeWords(words = c(stop_words$word, stopwords())) %>%
+      str_squish() %>% str_to_lower()
+  })
+  
+  
+  ##this takes ages so save the stuff afterwards
+  dir.create(paste(path, "/", currentcompany, "/txt_clean/", sep = ""))
+  lapply(seq_along(txts_clean), function(i){
+    writeLines(text = unlist(txts_clean[i]),
+               con = paste(path, "/", currentcompany, "/txt_clean/",  names(txts_clean)[i],".txt", sep = ""))
+  }
+  )
+  
+  # xxxxxxxxxxxxxxx
+  # ### load the txt data to a list in the original format
+  # files <- list.files(paste(path, "/", currentcompany, "/txt_clean/", sep = ""), full.names = T) %>% 
+  #   str_subset("\\.txt") %>% 
+  #   substr(nchar(.)-7, nchar(.)-4)
+  # 
+  # txts_clean = lapply(seq_along(files), function(i){
+  #   readLines(con = paste(path, "/", currentcompany, "/txt_clean/",  files[i],".txt", sep = ""))
+  # }
+  # )
+  # names(txts_clean) <- files
+  # ##
+  
+  
+  ##Example: count the number of occurrences of the word "digital" in GB by Adidas over time
+  # use the str_count function
+  <- vector(mode = "table", length = 14)
+  %>%
+    txts_clean <- data.frame(Doubles=double(),
+                     Ints=integer(),
+                     Factors=factor(),
+                     Logicals=logical(),
+                     Characters=character(),
+                     stringsAsFactors=FALSE)
+  
+    
+  #txts_cleans<-readLines(file.choose())
+  x <- c(2010:2019)
+  txts_clean<- data_frame(readLines("Volkswagen/txt_clean/2007.txt", encoding = "UTF-8"))
+  names(txts_clean)[1]<-"txt"
+  for (i in x) {
+    infile <- paste("Volkswagen/txt_clean/",i,".txt",sep="")
+   txts_clean<-rbind(txts_clean, readLines(infile, encoding = "UTF-8"))
+  }
+  print(count)
+  
+  a2008 <- data_frame(readLines("Volkswagen/txt_clean/2008.txt", encoding = "UTF-8"))
+  a2009 <- data_frame(readLines("Volkswagen/txt_clean/2009.txt", encoding = "UTF-8"))
+  a2011 <- data_frame(readLines("Volkswagen/txt_clean/2010.txt", encoding = "UTF-8"))
+  a2010 <- data_frame(readLines("Volkswagen/txt_clean/2011.txt", encoding = "UTF-8"))
+  
+  names(a2009)[1]<-"txt"
+  names(a2010)[1]<-"txt"
+  names(a2011)[1]<-"txt"
+  txts_clean <- bind_rows(a2008, a2009,a2010,a2011)
 
-
-# We can now apply the function to the folder in which we have stored the PDFs. The output is a vector with the texts of the PDFs.
-#e.g. for adidas
-txts <- convertpdf2txtfolder(paste0(path, "/", as.character(tables[1,1]), sep = ""))
-# add years as names to txt files
-t = list.files(paste0(path, "/", as.character(tables[1,1]), sep = ""), full.names = T)
-names(txts) <- substr(t, nchar(t)-7, nchar(t)-4)
-# inspect the structure of the txts element
-str(txts)
-
-
-# save result to disc 
-lapply(seq_along(txts), function(i){
-  dir.create(paste(path, "/", as.character(tables[1,1]), "/txt/", sep = ""))
-  writeLines(text = unlist(txts[i]),
-             con = paste(path, "/", as.character(tables[1,1]), "/txt/",  names(txts)[i],".txt", sep = ""))
+  
+  digitalcount = map(.x = txts_clean, .f = function(.x){str_count(.x, pattern = "digital")})
+  wordcount = map(.x = txts_clean, .f = function(.x){wordcount(.x)})
+  
+  
+  ###save to excel
+  # first convert list to dataframe
+  # dir.create(paste(path, "/", currentcompany, "/output/", sep = ""))
+  #write.xlsx(unlist(digitalcount),paste(path, "/", currentcompany, "/output/digital.xlsx", sep = ""))
+  
+  #or save all s data frame
+  df = do.call(rbind, Map(data.frame, digital=digitalcount, words=wordcount)) %>%
+    mutate(dgital_relfreq = digital/words)
+  
+  dir.create(paste(path, "/", currentcompany, "/output/", sep = ""))
+  write.xlsx(df, paste(path, "/", currentcompany, "/output/results.xlsx", sep = ""))
+  
 }
-)
-
-
-
-####now process the txt files
-##process the texts
-pacman::p_load(tm, qdap) # tm package used to remove punctuation, get word stems etc
-
-#clean the text (some basic stuff I just copied <-- check again; important is the lower case thing)
-txts_clean <- map(.x = txts, .f = function(.x){
-  .x  %>%
-    str_to_lower() %>%
-    qdap::replace_abbreviation() %>%
-    qdap::replace_contraction() %>%
-    tm::removePunctuation() %>%
-    #tm::removeWords(words = c(stop_words$word, stopwords())) %>%
-    str_squish() %>% str_to_lower()
-})
-
-##Example: count the number of occurrences of the word "digital" in GB by Adidas over time
-# use the str_count function
-digitalcount = map(.x = txts_clean, .f = function(.x){str_count(.x, pattern = "digital")})
-
-###save to excel
-# first convert list to dataframe
-write.xlsx(unlist(digitalcount),paste(path, "/", as.character(tables[1,1]), "/digital.xlsx", sep = ""))
-
