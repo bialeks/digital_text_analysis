@@ -175,6 +175,8 @@ for (id in 10:nrow(tables)){
       #tm::removeWords(words = c(stop_words$word, stopwords())) %>%
       str_squish() %>% str_to_lower()
   })
+# options for removePunctuation: preserve_intra_word_contractions = TRUE,
+ # preserve_intra_word_dashes = TRUE
   
   
   ##this takes ages so save the stuff afterwards
@@ -211,8 +213,15 @@ for (id in 10:nrow(tables)){
   for (i in x) {
     infile <- paste("Volkswagen/txt_clean/",i,".txt",sep="")
   # txts_clean<-rbind(txts_clean, readLines(infile, encoding = "UTF-8"))
-   txts_clean<-bind_rows(txts_clean, data_frame(readLines(infile, encoding = "UTF-8")))
-     }
+    tempf<- readLines(infile)
+   # tempf<-sapply(tempf, paste, collapse = " ")
+    tempf<-data_frame(removePunctuation(tempf,
+                                 preserve_intra_word_contractions = TRUE,
+                                 preserve_intra_word_dashes = TRUE))
+   txts_clean<-bind_rows(txts_clean,tempf)
+  }
+  
+  
 #Alternative
   
   a2008 <- data_frame(readLines("Volkswagen/txt_clean/2008.txt", encoding = "UTF-8"))
