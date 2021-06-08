@@ -201,7 +201,6 @@ for (id in 10:nrow(tables)){
   
   ##Example: count the number of occurrences of the word "digital" in GB by Adidas over time
   # use the str_count function
-<<<<<<< HEAD
 
   
   ###  Sylwia begin
@@ -214,37 +213,13 @@ for (id in 10:nrow(tables)){
   # txts_clean<-rbind(txts_clean, readLines(infile, encoding = "UTF-8"))
    txts_clean<-bind_rows(txts_clean, data_frame(readLines(infile, encoding = "UTF-8")))
      }
-
-=======
-  <- vector(mode = "table", length = 14)
-  %>%
-    txts_clean <- data.frame(Doubles=double(),
-                     Ints=integer(),
-                     Factors=factor(),
-                     Logicals=logical(),
-                     Characters=character(),
-                     stringsAsFactors=FALSE)
-  
-    
-  #txts_cleans<-readLines(file.choose())
-  x <- c(2010:2019)
-  txts_clean<- data_frame(readLines("Volkswagen/txt_clean/2007.txt", encoding = "UTF-8"))
-  names(txts_clean)[1]<-"txt"
-  for (i in x) {
-    infile <- paste("Volkswagen/txt_clean/",i,".txt",sep="")
-   txts_clean<-rbind(txts_clean, readLines(infile, encoding = "UTF-8"))
-  }
-  print(count)
->>>>>>> 96368034b9dd1219f311a47227ac1aa1390ceb34
+#Alternative
   
   a2008 <- data_frame(readLines("Volkswagen/txt_clean/2008.txt", encoding = "UTF-8"))
   a2009 <- data_frame(readLines("Volkswagen/txt_clean/2009.txt", encoding = "UTF-8"))
   a2011 <- data_frame(readLines("Volkswagen/txt_clean/2010.txt", encoding = "UTF-8"))
   a2010 <- data_frame(readLines("Volkswagen/txt_clean/2011.txt", encoding = "UTF-8"))
-  
-<<<<<<< HEAD
-
-  txt_clean <- bind_rows(a2008, a2009,a2010,a2011)
+    txt_clean <- bind_rows(a2008, a2009,a2010,a2011)
   
   digitalcount = map(.x = txts_clean, .f = function(.x){str_count(.x, pattern = "digital")})
   wordcount = map(.x = txts_clean, .f = function(.x){wordcount(.x)})
@@ -252,18 +227,13 @@ for (id in 10:nrow(tables)){
   wordcount2 = map(.x = txt_clean, .f = function(.x){wordcount(.x)})
   
   #### Sylwia end
-=======
-  names(a2009)[1]<-"txt"
-  names(a2010)[1]<-"txt"
-  names(a2011)[1]<-"txt"
-  txts_clean <- bind_rows(a2008, a2009,a2010,a2011)
+
 
   
   digitalcount = map(.x = txts_clean, .f = function(.x){str_count(.x, pattern = "digital")})
   wordcount = map(.x = txts_clean, .f = function(.x){wordcount(.x)})
   
   
->>>>>>> 96368034b9dd1219f311a47227ac1aa1390ceb34
   ###save to excel
   # first convert list to dataframe
   # dir.create(paste(path, "/", currentcompany, "/output/", sep = ""))
