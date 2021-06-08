@@ -14,8 +14,19 @@
 #* for some basic text mining stuff:
 #* http://rstudio-pubs-static.s3.amazonaws.com/256588_57b585da6c054349825cba46685d8464.html
 
-#path = "G:/Geteilte Ablagen/05_Prod/03_Projekte/05_DAX_GB_Daten?konomie/GB"
-path="C:/Users/zylwiuu/Documents/SVR/productivity/frequency_of_words"
+
+###Paths
+user <- Sys.getenv("USERNAME")
+if (user == "Viete-S") { 
+  path = "C:/Users/Viete-S/Documents/Daten_lokal/frequency_of_words/digital_text_analysis/GB"
+}
+
+if (user == "xxxxx"){  #Sylwia
+  path="C:/Users/zylwiuu/Documents/SVR/productivity/frequency_of_words"
+}
+
+
+
 setwd(path)
 
 library(pacman)        #R package management tool
